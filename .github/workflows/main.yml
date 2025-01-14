@@ -1,0 +1,30 @@
+name: Extract ZIP File
+
+on:
+  push:
+    paths:
+      - "zips/**" # Trigger when any ZIP file is pushed inside the `zips/` folder
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Dynamic Path
+        run: echo "ZIP_PATH=${{ github.event.head_commit.modified[0] }}" >> $GITHUB_ENV
+
+      - name: Extract ZIP
+        run: |
+          unzip $ZIP_PATH -d extracted-folder
+          echo "ZIP file extracted to 'extracted-folder'"
+
+      - name: Commit Extracted Files
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add extracted-folder
+          git commit -m "Extract ZIP contents from $ZIP_PATH"
+          git push
